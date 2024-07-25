@@ -38,6 +38,8 @@ jobs:
         run: dotnet build --no-restore src/MyProject/MyProject.csproj
 
       - name: Start API
+        env:
+          ASPNETCORE_URLS: http://localhost:5000
         run: |
           dotnet run --project src/MyProject/MyProject.csproj &
           echo "Waiting for API to start..."
