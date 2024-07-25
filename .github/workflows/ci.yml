@@ -21,9 +21,6 @@ on:
 jobs:
   start-api:
     runs-on: ubuntu-latest
-    outputs:
-      api-url: ${{ steps.set-url.outputs.api-url }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -41,7 +38,7 @@ jobs:
 
       - name: Start API server
         run: |
-          dotnet run --project src/MyProject/MyProject.csproj --urls "http://localhost:5000" &
+          nohup dotnet run --project src/MyProject/MyProject.csproj --urls "http://localhost:5000" &
           echo "Waiting for API to start..."
           # Wait for the API to be fully up and running
           sleep 10
@@ -50,11 +47,6 @@ jobs:
             echo "Waiting for API to start..."
             sleep 5
           done
-        background: true
-
-      - name: Set API URL
-        id: set-url
-        run: echo "::set-output name=api-url::http://localhost:5000"
 
   api-tests:
     runs-on: ubuntu-latest
