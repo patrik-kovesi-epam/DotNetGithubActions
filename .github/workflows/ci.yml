@@ -19,38 +19,8 @@ on:
           - edge
 
 jobs:
-  start-api:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v2
-        with:
-          dotnet-version: '7.x'
-
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Build API project
-        run: dotnet build --no-restore src/MyProject/MyProject.csproj
-
-      - name: Start API server
-        run: |
-          nohup dotnet run --project src/MyProject/MyProject.csproj --urls "http://localhost:5000" &
-          echo "Waiting for API to start..."
-          # Wait for the API to be fully up and running
-          sleep 10
-          # Check if the API is running
-          until curl --output /dev/null --silent --head --fail http://localhost:5000; do
-            echo "Waiting for API to start..."
-            sleep 5
-          done
-
   api-tests:
     runs-on: ubuntu-latest
-    needs: start-api
 
     steps:
       - name: Checkout code
@@ -65,7 +35,7 @@ jobs:
         run: dotnet restore
 
       - name: Run API tests
-        run: dotnet test tests/MyProject.ApiTests/MyProject.ApiTests.csproj --no-build --logger "trx;LogFileName=api-tests.trx"
+        run: dotnet test tests/MyProject.ApiTests/MyProject.ApiTests.csproj --no-build --logger "trx;LogFileName=api-tests.trx" --filter "TestCategory=API"
 
       - name: Publish API Test Results
         uses: actions/upload-artifact@v2
@@ -75,7 +45,6 @@ jobs:
 
   ui-tests:
     runs-on: ubuntu-latest
-    needs: start-api
 
     steps:
       - name: Checkout code
@@ -102,7 +71,7 @@ jobs:
             BROWSER='chrome'
           fi
           echo "Running UI tests in $BROWSER"
-          dotnet test tests/MyProject.UiTests/MyProject.UiTests.csproj --no-build --logger "trx;LogFileName=ui-tests.trx"
+          dotnet test tests/MyProject.UiTests/MyProject.UiTests.csproj --no-build --logger "trx;LogFileName=ui-tests.trx" --filter "TestCategory=UI"
 
       - name: Publish UI Test Results
         uses: actions/upload-artifact@v2
@@ -115,17 +84,3 @@ jobs:
         with:
           name: ui-test-screenshots
           path: '**/screenshots/*'
-
-  stop-api:
-    runs-on: ubuntu-latest
-    needs: [api-tests, ui-tests]
-
-    steps:
-      - name: Stop API server
-        run: |
-          # Find the process ID of the running API server
-          pid=$(lsof -t -i:5000)
-          # Terminate the process
-          if [ -n "$pid" ]; then
-            kill -9 $pid
-          fi

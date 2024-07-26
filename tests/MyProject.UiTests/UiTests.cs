@@ -6,6 +6,8 @@ using System.IO;
 
 namespace MyProject.UiTests
 {
+    [TestFixture]
+    [Category("UI")]
     public class UiTests
     {
         private IWebDriver _driver;
@@ -33,8 +35,9 @@ namespace MyProject.UiTests
         [Test]
         public void ExampleTest()
         {
-            _driver.Navigate().GoToUrl("https://example.com");
-            Assert.AreEqual("Example Domain", _driver.Title);
+            //_driver.Navigate().GoToUrl("http://rikiki.ddns.net:5000/WeatherForecast");
+            _driver.Navigate().GoToUrl("http://rikiki.ddns.net:5000/swagger/index.html");
+            Assert.AreEqual("Swagger UI", _driver.Title);
         }
     }
 }
